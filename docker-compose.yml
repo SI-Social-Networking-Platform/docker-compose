@@ -1,0 +1,86 @@
+version: '3.8'
+services:
+
+  web-front:
+    build:
+      context: ./web-front
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - app_network
+    container_name: web-front
+
+  feedservice:
+    build:
+      context: ./FeedService 
+      dockerfile: Dockerfile
+    networks:
+      - app_network
+    container_name: feedservice
+
+  userservice:
+    build:
+      context: ./user-service/UserService/UserService
+      dockerfile: Dockerfile
+    networks:
+      - app_network
+    container_name: userservice
+
+  postservice:
+    build:
+      context: ./post-service
+      dockerfile: Dockerfile
+    networks:
+      - app_network
+    container_name: postservice
+
+  api_gateway:
+    build:
+      context: ./Gateway
+      dockerfile: Dockerfile
+    ports:
+      - "5073:8080"
+    networks:
+      - app_network
+    container_name: api_gateway
+
+  postgres_user:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: userdb
+    ports:
+      - "6432:5432"
+    volumes:
+      - postgres_user_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    container_name: postgres_user_service
+    restart: unless-stopped
+
+  postgres_post:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postdb
+    ports:
+      - "6433:5432"
+    volumes:
+      - postgres_post_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    container_name: postgres_post_service
+    restart: unless-stopped
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres_user_data:
+  postgres_post_data:
+  postgres_feed_data:
+  rabbitmq_data:
